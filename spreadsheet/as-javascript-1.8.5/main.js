@@ -26,6 +26,7 @@ function SpreadsheetController($scope, $timeout) {
 
   // UP(38) and DOWN(40)/ENTER(13) move focus to the row above (-1) and below (+1).
   function keydown(event, col, row) {
+    // doesn't cover shift + enter (to go up)
     switch (event.which) {
       case 38:
       case 40:
@@ -60,7 +61,7 @@ function SpreadsheetController($scope, $timeout) {
   // Define the calculation handler; not calling it yet
   function calc() {
     var json = angular.toJson($scope.sheet);
-    var promise = $timeout(function() {
+    var promise = $timeout(function() { // not really a promise? just a timeout
       // If the worker has not returned in 99 milliseconds, terminate it
       $scope.worker.terminate();
       // Back up to the previous state and make a new worker
