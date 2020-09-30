@@ -4,6 +4,11 @@ function SpreadSheetController($scope, $timeout) {
   // Begin of $scope properties; start with the column/row labels
   $scope.Cols = [];
   $scope.Rows = [];
+  $scope.keydown = keydown;
+  $scope.reset = reset;
+  ($scope.init = init).call();
+  $scope.calc = calc;
+
   for (col of range('A', 'H')) {
     $scope.Cols.push(col);
   }
@@ -20,7 +25,7 @@ function SpreadSheetController($scope, $timeout) {
   }
 
   // UP(38) and DOWN(40)/ENTER(13) move focus to the row above (-1) and below (+1).
-  $scope.keydown = ({which}, col, row) => {
+  function keydown({which}, col, row) {
     switch (which) {
       case 38:
       case 40:
@@ -33,28 +38,28 @@ function SpreadSheetController($scope, $timeout) {
           }
         });
     }
-  };
+  }
 
   // Default sheet content, with some data cells and one formula cell.
-  $scope.reset = () => {
+  function reset() {
     $scope.sheet = {A1: 1874, B1: '+', C1: 2046, D1: '⇒', E1: '=A1+C1'};
-  };
+  }
 
   // Define the initializer, and immediately call it
-  ($scope.init = () => {
+  function init() {
     // Restore the previous .sheet; reset to default if it’s the first run
     $scope.sheet = angular.fromJson(localStorage.getItem(''));
     if (!$scope.sheet) {
       $scope.reset();
     }
     $scope.worker = new Worker('worker.js');
-  }).call();
+  }
 
   // Formula cells may produce errors in .errs; normal cell contents are in .vals
   [$scope.errs, $scope.vals] = [{}, {}];
 
   // Define the calculation handler; not calling it yet
-  $scope.calc = () => {
+  function calc() {
     const json = angular.toJson($scope.sheet);
     const promise = $timeout(() => {
       // If the worker has not returned in 99 milliseconds, terminate it
@@ -65,18 +70,20 @@ function SpreadSheetController($scope, $timeout) {
       $scope.calc();
     }, 99);
 
+    $scope.worker.onmessage = onmessage;
+
     // When the worker returns, apply its effect on the scope
-    $scope.worker.onmessage = ({data}) => {
+    function onmessage({data}) {
       $timeout.cancel(promise);
       localStorage.setItem('', json);
       $timeout(() => {
         [$scope.errs, $scope.vals] = data;
       });
-    };
+    }
 
     // Post the current sheet content for the worker to process
     $scope.worker.postMessage($scope.sheet);
-  };
+  }
 
   // Start calculation when worker is ready
   $scope.worker.onmessage = $scope.calc;
