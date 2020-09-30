@@ -20,7 +20,9 @@ function SpreadSheetController($scope, $timeout) {
     while (cur <= end) {
       yield cur;
       // If it’s a number, increase it by one; otherwise move to next letter
-      cur = (isNaN(cur) ? String.fromCodePoint(cur.codePointAt() + 1) : cur + 1);
+      cur = (isNaN(cur)
+             ? String.fromCodePoint(cur.codePointAt() + 1)
+             : cur + 1);
     }
   }
 
@@ -31,7 +33,9 @@ function SpreadSheetController($scope, $timeout) {
       case 40:
       case 13:
         $timeout(() => {
-          const direction = (which === 38) ? -1 : +1;
+          const direction = (which === 38)
+                            ? -1
+                            : +1;
           const cell = document.querySelector(`#${col}${row + direction}`);
           if (cell) {
             cell.focus();
