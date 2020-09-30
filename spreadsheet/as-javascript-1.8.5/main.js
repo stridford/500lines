@@ -31,7 +31,9 @@ function SpreadsheetController($scope, $timeout) {
       case 40:
       case 13:
         $timeout(function() {
-          var direction = (event.which === 38) ? -1 : +1;
+          var direction = (event.which === 38)
+                          ? -1
+                          : +1;
           var cell = document.querySelector('#' + col + (row + direction));
           if (cell) {
             cell.focus();
